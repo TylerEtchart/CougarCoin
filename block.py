@@ -1,5 +1,6 @@
 import hashlib
 import random
+from transaction import Transaction
 
 class Block:
 
@@ -14,7 +15,7 @@ class Block:
   
     def hash_block(self):
         sha = hashlib.sha256()
-        transaction_string = "".join(str(self.transactions))
+        transaction_string = "".join([t.to_string() for t in self.transactions])
         material = str(self.index) + \
                    str(self.timestamp) + \
                    transaction_string + \
@@ -35,4 +36,5 @@ class Block:
         self.nonce = random.randint(0, 1000000000)
 
     def add_miner_transaction(self, name):
-        self.transactions.append(name)
+        transaction = Transaction(from_id="blockchain", to_id=name, amount=50)
+        self.transactions.append(transaction)

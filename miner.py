@@ -9,20 +9,40 @@ class Miner:
     def __init__(self, public_key):
         self.public_key = public_key
         self.serializer = Serializer()
+        data = {
+            "public_key": public_key,
+        }
+        r = requests.post("http://localhost:5000/register_miner", data=data)
+        if r.text != "":
+            raise ValueError(r.text)
+
+
+    def get_wallet(self):
+        data = {
+            "public_key": self.public_key,
+        }
+        r = requests.post("http://localhost:5000/get_wallet", data=data)
+        if r.text == "":
+            raise ValueError("Get wallet failed")
+        else:
+            return self.serializer.deserialize(r.text)
+
 
     def get_block(self):
         r = requests.get("http://localhost:5000/get_block")
         return self.serializer.deserialize(r.text)
 
+
     def post_block(self, block):
         block_string = self.serializer.serialize(block)
         data = {
-            "block": block_string,
+            "block": block_string
         }
         r = requests.post("http://localhost:5000/post_block", data=data)
         if r.text != "":
             raise ValueError(r.text)
         
+
     def mine_block(self):
         succeded = False
         while not succeded:
@@ -31,6 +51,7 @@ class Miner:
             block.randomize_nonce()
             succeded = block.try_nonce()
         self.post_block(block)
+
 
     def mine(self):
         while True:
