@@ -1,5 +1,7 @@
 import hashlib
 import random
+import uuid
+from Crypto.PublicKey import RSA
 from transaction import Transaction
 
 class Block:
@@ -12,6 +14,8 @@ class Block:
         self.difficulty = difficulty
         self.randomize_nonce()
         self.hash = self.hash_block()
+        with open("keys/cougarcoin_private_key.pem") as f:
+            self.cougarcoin_private_key = RSA.importKey(f.read())
   
     def hash_block(self):
         sha = hashlib.sha256()
@@ -35,6 +39,7 @@ class Block:
     def randomize_nonce(self):
         self.nonce = random.randint(0, 1000000000)
 
-    def add_miner_transaction(self, name):
-        transaction = Transaction(from_id="blockchain", to_id=name, amount=50)
+    def add_miner_transaction(self, public_key):
+        prev_hash = "cougar_coin_minter_" + str(uuid.uuid4())
+        transaction = Transaction(prev_hash, self.cougarcoin_private_key, public_key)
         self.transactions.append(transaction)

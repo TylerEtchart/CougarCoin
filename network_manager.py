@@ -1,12 +1,12 @@
 from flask import Flask, abort, request
 from threading import Lock
 from timeit import default_timer as timer
+import argparse
 
 from block import Block
 from block_chain import BlockChain
 from serializer import Serializer
 from transaction_manager import TransactionManager
-from wallet import Wallet
 
 # flask init
 app = Flask(__name__)
@@ -17,7 +17,6 @@ mutex = Lock()
 s = Serializer()
 block_chain = BlockChain()
 transaction_manager = TransactionManager()
-global_wallet = {}
 
 # create genesis block
 genesis_block = Block(index=0,
@@ -38,22 +37,45 @@ def get_block():
     return s.serialize(block_chain.get_working_block())
 
 
-@app.route('/get_wallet', methods=['POST']) 
-def get_wallet():
+@app.route('/make_transaction', methods=['POST']) 
+def make_transaction():
+    if "transaction" not in request.form:
+        return ""
+    else:
+        transactions = s.deserialize(request.form["transaction"])
+        transaction_manager.add_transactions(transactions)
+        return "Worked!"
+
+
+@app.route('/collect_transactions', methods=['POST']) 
+def collect_transactions():
     if "public_key" not in request.form:
         return ""
     else:
-        return s.serialize(global_wallet[request.form["public_key"]])
+        valid_transactions = block_chain.get_valid_transactions(request.form["public_key"])
+        return s.serialize(valid_transactions)
 
 
 @app.route('/register_miner', methods=['POST']) 
 def register_miner():
-    if "public_key" not in request.form:
-        return 'Send the right parameters: "public_key"'
+    if "public_key" not in request.form and "pseudonym" not in request.form:
+        return 'Send the right parameters: "public_key" and "pseudonym"'
     else:
         public_key = request.form["public_key"]
-        global_wallet[public_key] = Wallet(public_key)
+        pseudonym = request.form["pseudonym"]
+        block_chain.create_wallet(public_key)
+        block_chain.add_pseudonym(pseudonym, public_key)
         return ""
+
+
+@app.route('/resolve_pseudonym', methods=['POST']) 
+def resolve_pseudonym():
+    if "pseudonym" not in request.form:
+        return ""
+    else:
+        pseudonym = request.form["pseudonym"]
+        public_key = block_chain.resolve_pseudonym(pseudonym)
+        return public_key
 
 
 @app.route('/post_block', methods=['POST']) 
@@ -67,16 +89,8 @@ def post_block():
         if block.try_nonce():
             mutex.acquire()
 
-            # Make transactions happen in the global wallet
-            valid_block = block_chain.add_block(block)
-            if valid_block:
-                for t in valid_block.transactions:
-                    if t.from_id not in global_wallet.keys():
-                        global_wallet[t.from_id] = Wallet(t.from_id)
-                    if t.to_id not in global_wallet.keys():
-                        global_wallet[t.to_id] = Wallet(t.to_id)
-                    global_wallet[t.from_id].add_negative_transaction(t, valid_block.hash)
-                    global_wallet[t.to_id].add_positive_transaction(t, valid_block.hash)
+            # Add block to block chain
+            block_chain.add_block(block)
 
             # Prepare next block
             transaction_manager.dump_transactions()
@@ -92,4 +106,8 @@ def post_block():
 
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', default=5000, help='The port for the network manager')
+    args = parser.parse_args()
+    port = int(args.port)
+    app.run(port=port)

@@ -6,26 +6,16 @@ import random
 
 class Miner:
 
-    def __init__(self, public_key):
+    def __init__(self, pseudonym, public_key):
         self.public_key = public_key
         self.serializer = Serializer()
         data = {
+            "pseudonym": pseudonym,
             "public_key": public_key,
         }
         r = requests.post("http://localhost:5000/register_miner", data=data)
         if r.text != "":
             raise ValueError(r.text)
-
-
-    def get_wallet(self):
-        data = {
-            "public_key": self.public_key,
-        }
-        r = requests.post("http://localhost:5000/get_wallet", data=data)
-        if r.text == "":
-            raise ValueError("Get wallet failed")
-        else:
-            return self.serializer.deserialize(r.text)
 
 
     def get_block(self):

@@ -6,8 +6,8 @@ class TransactionManager:
         self.working_transactions = []
         self.block_transactions = []
 
-    def add_transaction(self, transaction):
-        self.working_transactions.append(transaction)
+    def add_transactions(self, transactions):
+        self.working_transactions.extend(transactions)
 
     def dump_transactions(self):
         self.block_transactions = copy(self.working_transactions)
