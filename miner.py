@@ -3,6 +3,15 @@ from block import Block
 import requests
 from serializer import Serializer
 import random
+import argparse
+from Crypto.PublicKey import RSA
+
+def resolve_pseudonym(pseudonym):
+    data = {
+        "pseudonym": pseudonym,
+    }
+    r = requests.post("http://localhost:5000/resolve_pseudonym", data=data)
+    return r.text
 
 class Miner:
 
@@ -44,10 +53,26 @@ class Miner:
 
 
     def mine(self):
+        print("Mining...")
         while True:
             self.mine_block()
 
 
 if __name__ == "__main__":
-    miner = Miner("Miner {}".format(random.randint(0,10)))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--key', default="private_key1", help='The name of the key.pem')
+    args = parser.parse_args()
+    key = args.key
+    with open("keys/" + key + ".pem") as f:
+        private_key = RSA.importKey(f.read())
+        public_key = private_key.publickey()
+        public_key_string = public_key.exportKey().decode("utf-8")
+
+    pseudonym = resolve_pseudonym(public_key_string)
+    if pseudonym == "":
+        pseudonym = input("\nChoose a pseudonym: ")
+    else:
+        print("\nThis key has already been registered.\nRegistered pseudonym: " + pseudonym)
+
+    miner = Miner(pseudonym, public_key_string)
     miner.mine()

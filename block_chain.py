@@ -13,6 +13,7 @@ class BlockChain:
         self.global_wallet = {}
         self.transaction_index = {}
 
+
     def add_block(self, block):
         # add to the working chain
         self.working_chain.append(block)
@@ -36,8 +37,6 @@ class BlockChain:
             self.add_transactions_to_global_wallet(valid_block)
             return valid_block
 
-
-    # ---------------------------------------------------------
 
     def add_transactions_to_global_wallet(self, valid_block):
         for t in valid_block.transactions:
@@ -63,16 +62,17 @@ class BlockChain:
             self.transaction_index[current_hash] = t
 
 
-    # ---------------------------------------------------------
-        
     def set_working_block(self, block):
         self.working_block = block
+
 
     def get_working_block(self):
         return self.working_block
 
+
     def get_difficulty(self):
         return self.difficulty
+
 
     def get_valid_transactions(self, public_key):
         if public_key in self.global_wallet.keys():
@@ -83,22 +83,23 @@ class BlockChain:
         else:
             return []
 
+
     def create_wallet(self, public_key):
         if public_key not in self.global_wallet.keys():
             self.global_wallet[public_key] = set([])
+
 
     def add_pseudonym(self, pseudonym, public_key):
         self.pseudonyms[public_key] = pseudonym
         self.pseudonyms[pseudonym] = public_key
 
+
     def resolve_pseudonym(self, pseudonym):
-        print(self.pseudonyms)
         if pseudonym in self.pseudonyms.keys():
-            temp = self.pseudonyms[pseudonym]
-            print(temp)
-            return temp
+            return self.pseudonyms[pseudonym]
         else:
             return ""
+
 
     def to_html(self):
         ret = "<h1>Working Chain</h1><p>"

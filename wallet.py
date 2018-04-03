@@ -4,9 +4,11 @@ class Wallet:
         self.public_key = public_key
         self.transactions = {}
 
+
     def add_transactions(self, transactions):
         for t in transactions:
             self.transactions[t.get_signed_transaction()] = t
+
 
     def remove_transactions(self, amount):
         removed_transactions = []
@@ -22,10 +24,12 @@ class Wallet:
         self.transactions = kept_transactions
         return removed_transactions
 
+
     def update(self, transactions):
         self.transactions = {}
         for t in transactions:
             self.transactions[t.get_signed_transaction()] = t
+
 
     def get_amount(self):
         return len(self.transactions)

@@ -1,4 +1,4 @@
-from miner import Miner 
+from miner import Miner, resolve_pseudonym
 from transaction import Transaction
 from serializer import Serializer
 import requests
@@ -18,7 +18,11 @@ class Client():
         self.wallet = Wallet(self.public_key_string)
 
         # register miner
-        pseudonym = input("Choose a pseudonym: ")
+        pseudonym = resolve_pseudonym(self.public_key_string)
+        if pseudonym == "":
+            pseudonym = input("\nChoose a pseudonym: ")
+        else:
+            print("\nThis key has already been registered.\nRegistered pseudonym: " + pseudonym)
         self.miner = Miner(pseudonym, self.public_key_string)
         self.s = Serializer()
 
@@ -42,14 +46,6 @@ class Client():
         print("\n=======================")
         print("Balance: {}".format(self.wallet.get_amount()))
         print("=======================")
-
-
-    def resolve_pseudonym(self, pseudonym):
-        data = {
-            "pseudonym": pseudonym,
-        }
-        r = requests.post("http://localhost:5000/resolve_pseudonym", data=data)
-        return r.text
 
 
     def collect_transactions(self):
@@ -125,26 +121,3 @@ if __name__ == "__main__":
 
     client = Client(public_key, private_key)
     client.main()
-    # print(public_key.exportKey().decode("utf-8"))
-    
-    # print(content)
-    # from M2Crypto import RSA, BIO
-    # from Crypto.PublicKey import RSA
-    # r = 
-    # print(r)
-    # print(content)
-    # print(r.exportKey().decode("utf-8"))
-    # print(r.can_sign())
-    # print(private_key.has_private())
-
-    # m = "hello world".encode("utf-8")
-    # c = r.encrypt(m, "world")
-    # print(c)
-    # print(r.decrypt(c))
-    # c = r.sign(m, "world")
-    # print(c)
-    # print(r.verify(m, c))
-    # print(r.publickey())
-    # bio = BIO.MemoryBuffer(private)
-    # rsa = RSA.load_key_bio(bio)
-    # n, e = rsa.n, rsa.e

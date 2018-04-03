@@ -17,6 +17,7 @@ class Block:
         with open("keys/cougarcoin_private_key.pem") as f:
             self.cougarcoin_private_key = RSA.importKey(f.read())
   
+
     def hash_block(self):
         sha = hashlib.sha256()
         transaction_string = "".join([t.to_string() for t in self.transactions])
@@ -28,6 +29,7 @@ class Block:
         sha.update(material.encode("utf-8"))
         return sha.hexdigest()
 
+
     def try_nonce(self):
         self.hash = self.hash_block()
         int_digest = int(self.hash,16)
@@ -36,8 +38,10 @@ class Block:
         check = "0" * self.difficulty
         return test == check
 
+
     def randomize_nonce(self):
         self.nonce = random.randint(0, 1000000000)
+
 
     def add_miner_transaction(self, public_key):
         prev_hash = "cougar_coin_minter_" + str(uuid.uuid4())

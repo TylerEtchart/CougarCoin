@@ -56,6 +56,16 @@ def collect_transactions():
         return s.serialize(valid_transactions)
 
 
+@app.route('/check_public_key', methods=['POST']) 
+def check_public_key():
+    if "public_key" not in request.form:
+        return ""
+    else:
+        public_key = request.form["public_key"]
+        pseudonym = block_chain.resolve_pseudonym(public_key)
+        return pseudonym
+
+
 @app.route('/register_miner', methods=['POST']) 
 def register_miner():
     if "public_key" not in request.form and "pseudonym" not in request.form:
