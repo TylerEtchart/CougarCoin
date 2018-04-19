@@ -77,7 +77,7 @@ class Client():
 
         # resolve the pseudonym
         to = input("Who would you like to pay? ")
-        to_public_key = self.resolve_pseudonym(to)
+        to_public_key = resolve_pseudonym(to)
         if to_public_key == "":
             print(to + " is not yet registered to the blockchain")
             return
@@ -112,7 +112,7 @@ class Client():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--key', default="private_key1", help='The name of the key.pem')
+    parser.add_argument('--key', default="private_key2", help='The name of the key.pem')
     args = parser.parse_args()
     key = args.key
     with open("keys/" + key + ".pem") as f:
